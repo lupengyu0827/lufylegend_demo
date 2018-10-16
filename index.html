@@ -1,0 +1,306 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0,user-scalable=no" />
+    <title>Demo</title>
+    <style type="text/css">
+        body
+        {
+            margin: 0 auto;
+            width: 100%;
+            padding: 0px;
+        }
+    </style>
+    <script type="text/javascript" src="js/lufylegend-1.8.6.min.js"></script>
+	</head>
+	<body>
+		<div id="demo"></div>
+	</body>
+	<script type="text/javascript">
+		//所有的图片资源
+		var imgData = [
+					{ name: "back", path: "./img/bg.png" },
+					{ name: "car", path: "./images/car.png" },
+                    { name: "road", path: "./images/road.png" },
+                    { name: "no1", path: "./images/1.png" },
+                    { name: "no2", path: "./images/2.png" },
+                    { name: "pong", path: "./images/pong.png" },
+					{ name: "item0", path: "./images/rock1.png" },
+					{ name: "item1", path: "./images/wood1.png" },
+					{ name: "item2", path: "./images/wood2.png" },
+                    { name: "up", path: "./images/up.png" },
+                    { name: "down", path: "./images/down.png" }
+				];
+				
+    	var imglist, loadingLayer, backLayer, pongLayer, num1Layer, num2Layer, carLayer, rcarLayer, road1Layer, road2Layer, mountain1Layer, mountain2Layer, upLayer, downLayer, itemLayer;
+				
+	 	if (LGlobal.mobile) {
+	        //根据长宽设置是否按高度适配
+	        if (window.innerHeight / window.innerWidth > 1.48) {
+	            LGlobal.width = 480;
+	            LGlobal.height = 480 * window.innerHeight / window.innerWidth;
+	            LGlobal.canvasObj.width = LGlobal.width;
+	            LGlobal.canvasObj.height = LGlobal.height;
+	        }
+	    }
+	    LGlobal.align = LStageAlign.TOP_MIDDLE; //对齐的值 
+	    LGlobal.stageScale = LStageScaleMode.SHOW_ALL;//缩放模式 全屏
+	    LSystem.screen(LStage.FULL_SCREEN);
+		init(50,'demo',480,800,main);
+		function main(){
+			loadingLayer = new LoadingSample3();
+        	addChild(loadingLayer);
+        	LLoadManage.load(imgData, function (progress) {
+	            loadingLayer.setProgress(progress);
+	        }, function (result) {
+	            imglist = result;
+	            removeChild(loadingLayer);
+	            loadingLayer = null;
+	            gameinit();
+	        });
+		}
+		function gameinit(){
+		 	backLayer = new LSprite();
+		 	backLayer.addChild(new LBitmap(new LBitmapData(imglist["back"])));
+        	addChild(backLayer);//整个大背景Lsprite
+        	
+        	// 两个背景图滚动
+//      	mountain1Layer = new LSprite();//第一个背景山
+//	        mountain1Layer.x = 480 - 1086;
+//	        mountain1Layer.addChild(new LBitmap(new LBitmapData(imglist["back"])));
+//	        backLayer.addChild(mountain1Layer);
+//	        
+//	        mountain2Layer = new LSprite(); //第二个背景山
+//	        mountain2Layer.x = 480 - 1086 - 1086;
+//	        mountain2Layer.addChild(new LBitmap(new LBitmapData(imglist["back"])));
+//	        backLayer.addChild(mountain2Layer);
+//	        
+//       	road1Layer = new LSprite();//第一个路
+//	        road1Layer.x = 480 - 961;
+//	        road1Layer.y = 253;
+//	        road1Layer.addChild(new LBitmap(new LBitmapData(imglist["road"])));
+//	        backLayer.addChild(road1Layer);
+//	
+//	        road2Layer = new LSprite(); //第二个路
+//	        road2Layer.x = 480 - 961 - 961;
+//	        road2Layer.y = 253;
+//	        road2Layer.addChild(new LBitmap(new LBitmapData(imglist["road"])));
+//	        backLayer.addChild(road2Layer);
+//
+// 
+//	        itemLayer = new LSprite();//障碍物容器
+//      	backLayer.addChild(itemLayer);
+//
+//
+//        	carLayer = new LSprite();//汽车
+//	        carLayer.addChild(new LBitmap(new LBitmapData(imglist["car"])));
+//	        carLayer.x = 130;
+//	        carLayer.y = 243;
+//	        backLayer.addChild(carLayer);
+//	        
+//	        
+//	        rcarLayer = new LSprite();
+//	        rcarLayer.graphics.drawRect(1, '#ff0000', [0, 0, 155, 10], true, '#0000ff');
+//	        rcarLayer.x = 135;
+//	        rcarLayer.y = 333
+//	        rcarLayer.alpha = 0;
+//	        backLayer.addChild(rcarLayer);
+//	
+//	        num1Layer = new LSprite();//数字1
+//	        num1Layer.addChild(new LBitmap(new LBitmapData(imglist["no1"])));
+//	
+//	        num1Layer.x = 122;
+//	        num1Layer.y = 173;
+//	
+//	        num2Layer = new LSprite(); //数字2
+//	        num2Layer.addChild(new LBitmap(new LBitmapData(imglist["no2"])));
+//	
+//	        num2Layer.x = 122;
+//	        num2Layer.y = 173;
+//	
+//	        pongLayer = new LSprite(); //碰撞
+//	        pongLayer.addChild(new LBitmap(new LBitmapData(imglist["pong"])));
+//	
+//	        upLayer = new LSprite();//向上
+//	        upLayer.addChild(new LBitmap(new LBitmapData(imglist["up"])));
+//	
+//	        upLayer.x = 245;
+//	        upLayer.y = 50;
+//	        backLayer.addChild(upLayer);
+//	
+//	        downLayer = new LSprite();//向下
+//	        downLayer.addChild(new LBitmap(new LBitmapData(imglist["down"])));
+//	
+//	        downLayer.x = 245;
+//	        downLayer.y = 355;
+//	        backLayer.addChild(downLayer);
+	        
+	        
+//        	AddEvent();//添加每帧动画事件
+		}
+//		//动画事件
+//	    function AddEvent() {
+//	        backLayer.addEventListener(LEvent.ENTER_FRAME, onframe);
+//	        downLayer.addEventListener(LMouseEvent.MOUSE_DOWN, onDown);
+//	        upLayer.addEventListener(LMouseEvent.MOUSE_UP, onUp);
+//	    }
+//	    
+//	    //每帧函数
+//	    var gameState = 1;
+//	    function onframe() {
+//	        if (gameState == 1) {
+//	            LoadMontain();
+//	            LoadRoad();
+//	            wood();
+//	            LoadCar();
+//	        }
+//	        else if (gameState==2) {
+//	            num2Layer.alpha -= 0.05;
+//	            if (num2Layer.alpha <= 0) {
+//	                backLayer.removeChild(num2Layer);
+//	                backLayer.addChild(num1Layer);
+//	                num2Layer.alpha = 1;
+//	                gameState = 3;
+//	            }
+//	        }
+//	        else if (gameState == 3) {
+//	            num1Layer.alpha -= 0.05;
+//	            if (num1Layer.alpha <= 0) {
+//	                backLayer.removeChild(num1Layer);
+//	                for (var key1 in itemLayer.childList) {
+//	                    if (itemLayer.childList[key1].mode == "die") {
+//	                        itemLayer.removeChild(itemLayer.childList[key1]);
+//	                    }
+//	                }
+//	                backLayer.removeChild(pongLayer);
+//	                num1Layer.alpha = 1;
+//	                gameState = 1;
+//	            }
+//	        }
+//	    }
+//	    //背景山
+//	    function LoadMontain() {
+//	        mountain1Layer.x++;
+//	        if (mountain1Layer.x >= 480) {
+//	            mountain1Layer.x = 480 - 1086 - 1086 + 1;
+//	        }
+//	        mountain2Layer.x++;
+//	        if (mountain2Layer.x >= 480) {
+//	            mountain2Layer.x = 480 - 1086 - 1086 + 1;
+//	        }
+//	    }
+//	    //道路
+//	    function LoadRoad() {
+//	        road1Layer.x += 4;
+//	        if (road1Layer.x>=480) {
+//	            road1Layer.x = 480 - 961 - 961 + 4;
+//	        }
+//	        road2Layer.x += 4;
+//	        if (road2Layer.x >= 480) {
+//	            road2Layer.x = 480 - 961 - 961 + 4;
+//	        }
+//	    }
+//	    //汽车
+//	    var moveStep = 0;
+//	    var move = true;
+//	    function LoadCar() {
+//	        if (moveStep > 3) {
+//	            moveStep = 0;
+//	            if (move) {
+//	                carLayer.x -= 1;
+//	                carLayer.y -= 1;
+//	                move = false;
+//	            }
+//	            else {
+//	                carLayer.x += 1;
+//	                carLayer.y += 1;
+//	                move = true;
+//	            }
+//	        }
+//	        else {
+//	            moveStep++;
+//	        }
+//	    }
+//	
+//	    var step = 78;
+//	    //障碍物
+//	    function wood() {
+//	        for (var key in itemLayer.childList) {
+//	            itemLayer.childList[key].run();
+//	            if (itemLayer.childList[key].mode == "die") {
+//	                itemLayer.removeChild(itemLayer.childList[key]);
+//	            }
+//	        }
+//	        step++;
+//	        if (step > 80) {
+//	            step = 0;
+//	            AddItem();
+//	        }
+//	        else { 
+//	        
+//	        }
+//	    }
+//	    function onDown(event) {
+//	        //        if (event.selfY < LGlobal.height * 0.5) {
+//	        carLayer.y = 243;
+//	        rcarLayer.y = 333;
+//	        //        } else {
+//	        //            carLayer.y = 243;
+//	        //            rcarLayer.y = 333;
+//	        //        }
+//	    }
+//	
+//	    function onUp(event) {
+//	        carLayer.y = 213;
+//	        rcarLayer.y = 303;
+//	    }
+//	    //添加新的障碍物
+//	    function AddItem() {
+//	        var item = new Item();
+//	        var index = Math.floor(Math.random() * 2);
+//	        if (index == 0) {
+//	            item.y = 323;
+//	        }
+//	        else {
+//	            item.y = 293;
+//	        }
+//	        itemLayer.addChild(item);
+//	    }
+//	    //初始化障碍物
+//	    function Item() {
+//	        base(this, LSprite, []);
+//	        var self = this;
+//	        var index = Math.floor(Math.random()*3);
+//	        self.value = index;
+//	        self.mode = "";
+//	        var itembitmap = new LBitmap(new LBitmapData(imglist["item" + index]));
+//	        self.addChild(itembitmap);
+//	    }
+//	    Item.prototype.run = function () {
+//	        var self = this;
+//	        self.x += 3;
+//	        var hit = self.Checkhit();
+//	        if (hit)
+//	        {
+//	            self.mode = "die";
+//	        }
+//	        if (self.x >= LGlobal.width) {
+//	            self.mode = "none";
+//	        }
+//	    };
+//	    Item.prototype.Checkhit = function () {
+//	        var self = this;
+//	        if (LGlobal.hitTest(self, rcarLayer)) {
+//	            pongLayer.x = self.x;
+//	            pongLayer.y = self.y;
+//	            backLayer.addChild(pongLayer);
+//	            backLayer.addChild(num2Layer);
+//	
+//	            gameState = 2;
+//	            return true;
+//	        }
+//	        return false;
+//	    };
+	</script>
+</html>

@@ -1,0 +1,581 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0,user-scalable=no" />
+    <title>Demo</title>
+    <style type="text/css">
+        body
+        {
+            margin: 0 auto;
+            width: 100%;
+            padding: 0px;
+        }
+    </style>
+	</head>
+	<body>
+		<div id="demo"></div>
+	</body>
+	<script type="text/javascript" src="js/lufylegend-1.8.6.min.js"></script>
+	<script type="text/javascript">
+		var imgData = [
+						{name : 'background' , path : './img/bg.png'},
+						{name : 'a0' , path : './img/00.png'},
+						{name : 'a1' , path : './img/f0.png'}
+//						{name : 'name' ,path : 'img/1.png'}
+						]
+ 		var loadingLayer,
+ 			bgLayer,
+ 			bk,
+ 			title,
+ 			btn;
+ 		if (LGlobal.mobile) {
+	        //根据长宽设置是否按高度适配~
+	        if (window.innerHeight / window.innerWidth > 1.48) {
+	            LGlobal.width = 320;
+	            LGlobal.height = 320 * window.innerHeight / window.innerWidth;
+	            LGlobal.canvasObj.width = LGlobal.width;
+	            LGlobal.canvasObj.height = LGlobal.height;
+	        }
+	    }
+	    LGlobal.align = LStageAlign.TOP_MIDDLE; //对齐的值 
+	    LGlobal.stageScale = LStageScaleMode.SHOW_ALL;//缩放模式 全屏
+	    LSystem.screen(LStage.FULL_SCREEN);	
+		init( 50 , 'demo' ,320 ,480 , main );
+		function main(){
+			//添加进度条~
+			loadingLayer = new LoadingSample3()
+			addChild( loadingLayer );
+			LLoadManage.load( imgData ,function (progress) {
+				//进度~
+	            loadingLayer.setProgress(progress);
+	        }, function (result) {
+	        	//加载完回调~
+	            imglist = result;
+	            removeChild(loadingLayer);
+	            loadingLayer = null;
+	            gameinit();
+	        });
+		}
+		
+		function gameinit(){
+			bgLayer = new LSprite();
+        	addChild(bgLayer);
+        	
+        	//添加背景图片~
+        	bk = new LSprite();
+        	bk.alpha = 0.5;
+        	bk.addChild( new LBitmap( new LBitmapData( imglist["background"] ) ) );
+        	bgLayer.addChild(bk);
+        	
+        	//添加字体
+        	title = new LTextField();
+        	title.x = 60;
+			title.y = 100;
+			title.size = 30;
+			title.color = "#51833E";
+			title.text = "俄罗斯方块";
+			bgLayer.addChild(title);
+			
+			//添加开始按钮
+			btn = addButton('开始游戏',100,50,22,15)
+			btn.x = 110;
+			btn.y = 300;
+			btn.addEventListener(LMouseEvent.MOUSE_DOWN, gameToStart);
+			bgLayer.addChild(btn);
+			addChild(new FPS());
+		}
+		
+		var map,_Block,score,nodeArray,speedMax,speedLabel,_stop;
+		//点击开始按钮
+		var upKey,leftKey,downKey,rightKey;
+		function gameToStart(){
+			//清空画板
+			bgLayer.removeAllChild();
+			bgLayer.die();
+			_stop = false;
+			frameend = true;
+			
+			//添加背景图片
+			newBk = new LSprite();
+        	newBk.alpha = 0.5;
+        	newBk.addChild( new LBitmap( new LBitmapData( imglist["background"] ) ) );
+        	bgLayer.addChild(newBk);
+			//添加上下左右按钮
+			upKey = addButton('←',40 , 40 ,15 ,10 );
+			upKey.x = 50;
+			upKey.y = 420;
+			bgLayer.addChild(upKey);
+			
+			leftKey = addButton('↑',40 , 40 ,15 ,10 );
+			leftKey.x = 90;
+			leftKey.y = 380;
+			bgLayer.addChild(leftKey);
+			
+			downKey = addButton('↓',40 , 40 ,15 ,10 );
+			downKey.x = 90;
+			downKey.y = 420;
+			bgLayer.addChild(downKey);
+			
+			rightKey = addButton('→',40 , 40 ,15 ,10 );
+			rightKey.x = 130;
+			rightKey.y = 420;
+			bgLayer.addChild(rightKey);
+			//添加分数显示
+			speedLabel = new LTextField();
+			speedLabel.x = 250;
+			speedLabel.y = 200;
+			bgLayer.addChild(speedLabel);
+			scoreLabel = new LTextField();
+			scoreLabel.x = 250;
+			scoreLabel.y = 250;
+			bgLayer.addChild(scoreLabel);
+			
+			//游戏区域
+			workMap = new LSprite();
+			bgLayer.addChild(workMap);
+			
+			gameStart();
+			bgLayer.addEventListener(LEvent.ENTER_FRAME, onframe)
+			leftKey.addEventListener(LMouseEvent.MOUSE_DOWN, moveleft);
+			rightKey.addEventListener(LMouseEvent.MOUSE_DOWN, moveright);
+			downKey.addEventListener(LMouseEvent.MOUSE_DOWN, movedown);
+			upKey.addEventListener(LMouseEvent.MOUSE_DOWN, movechange);
+			bgLayer.addEventListener(LMouseEvent.MOUSE_UP, keyover);
+			
+		}
+		
+		
+		//游戏开始
+		function gameStart(){
+			_Block = new Block();
+			//创建画布
+			map = [
+				[1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+				[1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+			];
+			
+			nodeArray = [];
+			// 画游戏区域边框
+			var i,j,node,nArr,bitmap,bitmapdata,boxl = 15;
+			for(i=0;i<map.length;i++){
+				nArr = [];
+				for(j=0;j<map[0].length;j++){
+					node = {};
+					if(i==0 || i==map.length-1 || j==0 || j==map[0].length -1){
+						bitmapdata = new LBitmapData(imglist["a1"]);
+						bitmap = new LBitmap(bitmapdata);
+						bitmap.x = boxl*j+boxl;
+						bitmap.y = boxl*i+boxl;
+						node["value"] = 10;
+						node["bitmap"] = bitmap;
+						workMap.addChild(bitmap);
+					}else{
+						bitmapdata = new LBitmapData(imglist["a"+map[i][j]]);
+						bitmap = new LBitmap(bitmapdata);
+						bitmap.x = boxl*j+boxl;
+						bitmap.y = boxl*i+boxl;
+						node["value"] = map[i][j];
+						node["bitmap"] = bitmap;
+						workMap.addChild(bitmap);
+					}
+					nArr[j] = node;
+				}
+				nodeArray[i] = nArr;
+			}
+			speedMax = 15;
+			speed=speedMax;
+			speedLabel.text="速度:" +(16-speedMax)+ "";
+			score = 0;
+			scoreLabel.text="得分:" +score+"";
+			// 提示下个方块是什么
+			getNewBox();
+			//准备下来的方块
+			plusBox();
+			drawMap();
+			_stop = false;
+		}
+		
+		
+		
+		var myKey = {keyControl:0,speedCotrol:0,changeOver:false};
+		function onframe(){
+			if(!frameend)return;
+			if(_stop)return;
+			frameend = false;
+			minusBox();
+			if(myKey.keyControl==32 && !myKey.changeOver){
+				changeBox();
+			}
+			if(myKey.keyControl==37 && checkPlus(-1,0)){
+				if(myKey.speedCotrol==0||myKey.speedCotrol>=4){
+					point.x--;
+				}
+				myKey.speedCotrol++;
+			}
+			if(myKey.keyControl==39 && checkPlus(1,0)){
+				if(myKey.speedCotrol==0||myKey.speedCotrol>=4){
+					point.x++;
+				}
+				myKey.speedCotrol++;
+			}
+			if(speed == 0 || myKey.keyControl==40){
+				if (checkPlus(0,1)){
+					point.y++;
+				}else {
+					plusBox();
+					if(point.y == 1){
+						_stop = true;
+						gameOver();
+						return;
+					}
+					removeBox();
+					getNewBox();
+				}
+				speed = speedMax;
+			}else{
+				speed --;
+			}
+			plusBox();
+			drawMap();
+			frameend = true;
+		}
+		function moveleft(){
+			if(myKey.keyControl > 0)return;
+			myKey.keyControl = 32;
+		}
+		function moveright(){
+			if(myKey.keyControl > 0)return;
+			myKey.keyControl = 39;
+		}
+		function movedown(){
+			if(myKey.keyControl > 0)return;
+			myKey.keyControl = 40;
+		}
+		
+		function movechange(){
+			if(myKey.keyControl > 0)return;
+			myKey.keyControl = 37;
+		}
+		
+		function keyover(){
+			myKey.keyControl=0;
+			myKey.speedCotrol = 0;
+			myKey.changeOver=false;
+		}
+		
+		function changeBox(){
+			var saveBox = nowBox;
+			nowBox = [
+						[0,0,0,0],
+						[0,0,0,0],
+						[0,0,0,0],
+						[0,0,0,0]
+					 ];
+			var i,j;
+			for(i=0;i<saveBox.length;i++){
+				for(j=0;j<saveBox[1].length;j++){
+					nowBox[i][j]=saveBox[(3-j)][i];
+				}
+			}
+			if (!checkPlus(0,0)){
+				nowBox = saveBox;
+			}else{
+				myKey.changeOver = true;
+			}
+		}
+		
+		
+		function removeBox(){
+			var i,j,count = 0;
+			for(i=point.y;i<(point.y+4);i++){
+				for(j=1;j<(map[1].length-1);j++){
+					if(map[i][j]==0){
+						break;
+					}
+					if(j==(map[1].length-2) && i < map.length - 1){
+						moveLine(i);
+						count++;
+					}
+				}
+			}
+			if(count == 1){
+				score += 1;
+			}else if(count == 2){
+				score += 3;
+			}else if(count == 3){
+				score += 6;
+			}else if(count == 4){
+				score += 10;
+			}
+			if(count > 0){
+				scoreLabel.text="得分:" +score+"";
+				var showSpeed = 1;
+				if(score > 1000){
+					speedMax = 1;
+					showSpeed = 11;
+				}else if(score > 900){
+					speedMax = 2;
+					showSpeed = 10;
+				}else if(score > 800){
+					speedMax = 3;
+					showSpeed = 9;
+				}else if(score > 700){
+					speedMax = 4;
+					showSpeed = 8;
+				}else if(score > 600){
+					speedMax = 5;
+					showSpeed = 7;
+				}else if(score > 500){
+					speedMax = 6;
+					showSpeed = 6;
+				}else if(score > 400){
+					speedMax = 7;
+					showSpeed = 5;
+				}else if(score > 300){
+					speedMax = 9;
+					showSpeed = 4;
+				}else if(score > 200){
+					speedMax = 11;
+					showSpeed = 3;
+				}else if(score > 100){
+					speedMax = 13;
+					showSpeed = 2;
+				}
+				speedLabel.text="速度:" +showSpeed+ "";
+			}
+		}
+		//整排消失
+		function moveLine(line){
+			var i;
+			for(i=line;i>1 ;i--){
+			    map[i]=map[i-1];
+			}
+			map[1] = [1,0,0,0,0,0,0,0,0,0,0,0,0,1];
+		}
+		
+		var point={x:0,y:0};//初始化坐标
+		var nextNodeArray,nextBox,nowBox;
+		function getNewBox(){
+			if (nextBox==null){
+				nextBox=_Block.getBlock();
+			}
+			if(nextNodeArray == null){
+				nextNodeArray = [];
+				var i,j,node,nArr,bitmap,bitmapdata,boxl = 15;
+				for(i=0;i<nextBox.length;i++){
+					nArr = [];
+					for(j=0;j<nextBox[0].length;j++){
+						node = {};
+							bitmapdata = new LBitmapData(imglist["a"+nextBox[i][j]]);
+							bitmap = new LBitmap(bitmapdata);
+							bitmap.x = 220 + boxl*j+boxl;
+							bitmap.y = 50 + boxl*i+boxl;
+							node["value"] = nextBox[i][j];
+							node["bitmap"] = bitmap;
+							console.log(node)
+							workMap.addChild(bitmap);
+							nArr[j] = node;
+					}
+					nextNodeArray[i] = nArr;
+				}
+			}
+			nowBox=nextBox;
+			point.x=5;
+			point.y=1;
+			nextBox=_Block.getBlock();
+		}
+		
+		// 准备下来的方块
+		function plusBox(){
+			var i,j;
+			for(i=0;i<nowBox.length;i++){
+				for(j=0;j<nowBox[i].length;j++){
+					map[i+point.y][j+point.x]=nowBox[i][j]+map[i+point.y][j+point.x];
+				}
+			}
+		}
+		//准备下来
+		function drawMap(){
+			var i,j,boxl = 15;
+			for(i=0;i<map.length;i++){
+				for(j=0;j<map[0].length;j++){
+					if(i==0 || i==map.length-1 || j==0 || j==map[0].length -1){
+					}else{
+						if(nodeArray[i][j]["value"] != map[i][j] && imglist["a"+map[i][j]]){
+							nodeArray[i][j]["bitmap"].bitmapData.image = imglist["a"+map[i][j]];
+							nodeArray[i][j]["value"] = map[i][j];
+						}
+					}
+				}
+			}
+			drawNextBox();
+		}
+		//下一步
+		function drawNextBox(){
+			if(nextBox!=null){
+				var i,j,boxl = 15;
+				for(i=0;i<nextBox.length;i++){
+					for(j=0;j<nextBox[i].length;j++){
+						if(nextNodeArray[i][j]["value"] != nextBox[i][j]){
+							nextNodeArray[i][j]["bitmap"].bitmapData.image = imglist["a"+nextBox[i][j]];
+							nextNodeArray[i][j]["value"] = nextBox[i][j];
+						}
+					}
+				}
+			}
+		}
+		
+		
+		function checkPlus(nx,ny){
+			var i,j;
+			for(i=0;i<nowBox.length;i++){
+				for(j=0;j<nowBox[i].length;j++){
+					if(nowBox[i][j]+map[i+point.y + ny][j+point.x + nx] > 1){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		
+		//向下运动
+		function minusBox(){
+			var i,j;
+			for(i=0;i<nowBox.length;i++){
+				for(j=0;j<nowBox[i].length;j++){
+					map[i+point.y][j+point.x]=map[i+point.y][j+point.x]-nowBox[i][j];
+				}
+			}
+		}
+		
+		//游戏结束提示重新开始
+		function gameOver(){
+			bgLayer.removeChild(leftKey);
+			bgLayer.removeChild(rightKey);
+			bgLayer.removeChild(downKey);
+			bgLayer.removeChild(upKey);
+			var startBtn = addButton("重新开始",150,30,40,5);
+			startBtn.x = 80;
+			startBtn.y = 250;
+			bgLayer.addChild(startBtn);
+			startBtn.addEventListener(LMouseEvent.MOUSE_DOWN, gameToStart);
+		}
+		
+		
+		//添加按钮的。。。。 text ：文本 、 w：宽、h：高、 x：y： 坐标。
+		function addButton(text,w,h,x,y){
+			var upState = new LSprite();
+			// 画一个矢量图形
+			upState.graphics.fillStyle("#ffffff");
+			upState.graphics.drawRect(1,"#ffffff",[0, 0, w, h],true,"#51833E");
+			var txt = new LTextField();
+			txt.x = x;
+			txt.y = y;
+			txt.color = '#ffffff';
+			txt.text = text;
+			upState.addChild(txt);
+			var overState = new LSprite();
+			overState.graphics.drawRect(1,"#ffffff",[0, 0, w, h],true,"#51933E");
+			var txt1 = new LTextField();
+			txt1.x = x;
+			txt1.y = y;
+			txt.color = '#ffffff';
+			txt1.text = text;
+			overState.addChild(txt1);
+			var btn = new LButton(upState,overState);
+			return btn;
+		}
+		// 创建方块
+		function Block(){
+			var newBlock = this;
+			newBlock.objectindex = ++LGlobal.objectIndex;
+			//  横条~ ----
+			newBlock.block1=[[0,0,0,0],
+					   		 [0,0,0,0],
+					   		 [1,1,1,1],
+					   		 [0,0,0,0]];
+			// 方块~
+			// --
+			// --
+			newBlock.block2=[[0,0,0,0],
+				  	   		 [0,1,1,0],
+				  	   		 [0,1,1,0],
+				  	   		 [0,0,0,0]];
+				  	   
+			// T字形~
+			// ---
+			//  -
+			//	-
+			newBlock.block3=[[0,0,0,0],
+				       		 [1,1,1,0],
+				       		 [0,1,0,0],
+				       		 [0,0,0,0]];
+				       
+			// L字形~
+			// --
+			// -
+			// -
+			newBlock.block4=[[0,1,1,0],
+				       		 [0,1,0,0],
+				       		 [0,1,0,0],
+				       		 [0,0,0,0]];
+				       
+			// 反L字形~
+			// --
+			//  -
+			//  -
+			newBlock.block5=[[0,1,1,0],
+				       		 [0,0,1,0],
+				       		 [0,0,1,0],
+				       		 [0,0,0,0]];
+				       
+			// S字形~
+			// --
+			//--
+			newBlock.block6=[[0,0,0,0],
+				       		 [0,1,0,0],
+				       		 [0,1,1,0],
+				       		 [0,0,1,0]];
+			// 反S字形~
+			// --
+			//	--
+			newBlock.block7=[[0,0,0,0],
+				       		 [0,0,1,0],
+				       		 [0,1,1,0],
+				       		 [0,1,0,0]];
+			newBlock.news=[newBlock.block1,newBlock.block2,newBlock.block3,newBlock.block4,newBlock.block5,newBlock.block6,newBlock.block7];
+		}
+		Block.prototype = {
+			getBlock : function(){
+				var newBlock = this;
+				var num=7*Math.random();
+				var index=parseInt(num);
+				return newBlock.news[index];
+			}
+		}
+//		var newBlock  = Block();
+//		newBlock.getBlock();
+	</script>
+</html>
