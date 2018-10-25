@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0,user-scalable=no" />
+    <title>Demo</title>
+    <style type="text/css">
+        body
+        {
+            margin: 0 auto;
+            width: 100%;
+            padding: 0px;
+        }
+    </style>
+	</head>
+	<body>
+		<div id="demo"></div>
+	</body>
+	<script type="text/javascript" src="js/lufylegend-1.8.6.min.js"></script>
+	<script type="text/javascript">
+		if (LGlobal.mobile) {
+	        //根据长宽设置是否按高度适配~
+	        if (window.innerHeight / window.innerWidth > 1.48) {
+	            LGlobal.width = 320;
+	            LGlobal.height = 320 * window.innerHeight / window.innerWidth;
+	            LGlobal.canvasObj.width = LGlobal.width;
+	            LGlobal.canvasObj.height = LGlobal.height;
+	        }
+	    }
+	    LGlobal.align = LStageAlign.TOP_MIDDLE; //对齐的值 
+	    LGlobal.stageScale = LStageScaleMode.SHOW_ALL;//缩放模式 全屏
+	    LSystem.screen(LStage.FULL_SCREEN);	
+	    var imgData = [
+	    				{ name : "a0" , path : 'img/f0.png' },
+	    				{ name : "bg" , path : 'img/snakeBg.png' }
+	    			  ]
+		var loadingLayer ; 
+		init(50 , 'demo' , 320 ,480 ,main);
+		
+		function main(){
+			loadingLayer = new LoadingSample1();
+			addChild(loadingLayer);
+			LLoadManage.load( imgData ,function(progress){
+				  loadingLayer.setProgress(progress);
+			},function(result){
+				//加载完回调~
+	            imglist = result;
+	            removeChild(loadingLayer);
+	            loadingLayer = null;
+	            gameinit();
+			})
+		}
+		var bgLayer ,title ;
+		function gameinit(){
+			
+			bgLayer = new LSprite();
+			addChild(bgLayer);
+			
+			bk = new LBitmapData( imglist["bg"]);
+			bk.width = 320 ; 
+			bk.height = 480 ;
+			bk.y = -120;
+			bgLayer.addChild( new LBitmap( bk ) ) ;
+			
+			title = new LTextField();
+			title.x = 100;
+			title.y = 50;
+			title.size = 30;
+			title.color = "#000";
+//			title.text = '贪吃蛇'
+			bgLayer.addChild(title);
+			
+			var sBtn = newBtn( '开始游戏', 100,50,22,15 )
+			sBtn.x = 120;
+			sBtn.y = 380;
+			bgLayer.addChild(sBtn);
+			sBtn.addEventListener( LMouseEvent.MOUSE_DOWN , goToStart )
+			addChild(new FPS());
+		}
+		
+		function goToStart(){
+			bgLayer.removeAllChild();
+			bgLayer.die()
+		}
+		
+		
+		function newBtn( text , w , h , x , y ){
+			// 点击之前状态
+			var startBtnBg = new LSprite()
+			startBtnBg.graphics.drawRect(1,"#ccc",[0, 0, w, h],true,"#000");
+			
+			startText = new LTextField();
+			startText.x = x;
+			startText.y = y;
+			startText.text = text ; 
+			startText.color = '#ffffff'
+			startBtnBg.addChild(startText);
+			//点击之后状态
+			var endBtnBg = new LSprite();
+			endBtnBg.graphics.drawRect(1,"#ccc",[0, 0, w, h],true,"#ddd");
+			
+			endText = new LTextField();
+			endText.x = x;
+			endText.y = y;
+			endText.text = text ;
+			endText.color = '#ffffff'
+			endBtnBg.addChild(endText);
+			
+			var beginBtn = new LButton( startBtnBg , endBtnBg )
+			return beginBtn;
+		}
+	</script>
+</html>

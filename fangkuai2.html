@@ -1,9 +1,11 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0,user-scalable=no" />
     <title>Demo</title>
+    <script type="text/javascript" src="js/lufylegend-1.9.7.simple.min.js"></script>
+    <script type="text/javascript" src="js/lufylegend.LoadingSample4-0.1.0.min.js"></script>
     <style type="text/css">
         body
         {
@@ -16,25 +18,24 @@
 	<body>
 		<div id="demo"></div>
 	</body>
-	<script type="text/javascript" src="js/lufylegend-1.10.0.simple.min.js"></script>
-	<script src="js/lufylegend.LoadingSample4-0.1.0.min.js" type="text/javascript" charset="utf-8"></script>
-	<script type="text/javascript">
-		var imgData = [
+</html>
+<script type="text/javascript">
+    var imgData = [
 						{name : 'background' , path : './img/bg.png'},
 						{name : 'a0' , path : './img/00.png'},
 						{name : 'a1' , path : './img/f0.png'}
-//						{name : 'name' ,path : 'img/1.png'}
+						//{name : 'name' ,path : 'img/1.png'}
 						]
  		var loadingLayer,
  			bgLayer,
  			bk,
  			title,
  			btn;
-		init( 50 , 'demo' ,320 ,480 , main );
-		function main(){
-			
-			if (LGlobal.mobile) {
-	        //根据长宽设置是否按高度适配~
+
+		init( 1000/30 , 'demo' ,320 ,480 , main );
+		function main() {
+		    if (LGlobal.mobile) {
+		        //根据长宽设置是否按高度适配~
 		        if (window.innerHeight / window.innerWidth > 1.48) {
 		            LGlobal.width = 320;
 		            LGlobal.height = 320 * window.innerHeight / window.innerWidth;
@@ -42,11 +43,10 @@
 		            LGlobal.canvasObj.height = LGlobal.height;
 		        }
 		    }
-		    LGlobal.align = LStageAlign.TOP_MIDDLE; //对齐的值 
-		    LGlobal.stageScale = LStageScaleMode.SHOW_ALL;//缩放模式 全屏
-	      	LSystem.screen(LStage.FULL_SCREEN);	
-			//添加进度条~
-			loadingLayer = new LoadingSample4()
+			//添加进度条~LGlobal.align = LStageAlign.TOP_MIDDLE; //对齐的值
+	    LGlobal.stageScale = LStageScaleMode.SHOW_ALL;//缩放模式 全屏
+	    LSystem.screen(LStage.FULL_SCREEN);
+	    loadingLayer = new LoadingSample4();
 			addChild( loadingLayer );
 			LLoadManage.load( imgData ,function (progress) {
 				//进度~
@@ -59,35 +59,38 @@
 	            gameinit();
 	        });
 		}
-		
-		function gameinit(){
-			bgLayer = new LSprite();
-        	addChild(bgLayer);
-        	
-        	//添加背景图片~
-        	bk = new LSprite();
-        	bk.alpha = 0.5;
-        	bk.addChild( new LBitmap( new LBitmapData( imglist["background"] ) ) );
-        	bgLayer.addChild(bk);
-        	
-        	//添加字体
-        	title = new LTextField();
-        	title.x = 60;
-			title.y = 100;
-			title.size = 30;
-			title.color = "#51833E";
-			title.text = "俄罗斯方块";
-			bgLayer.addChild(title);
-			
+
+		function gameinit() {
+		    console.log(1);
+//			bgLayer = new LSprite();
+//      	addChild(bgLayer);
+//
+//      	//添加背景图片~
+//      	bk = new LSprite();
+//      	bk.alpha = 0.5;
+//      	bk.addChild( new LBitmap( new LBitmapData( imglist["background"] ) ) );
+//      	bgLayer.addChild(bk);
+//
+//      	//添加字体
+//      	title = new LTextField();
+//      	title.x = 60;
+//			title.y = 100;
+//			title.size = 30;
+//			title.color = "#51833E";
+//			title.text = "俄罗斯方块";
+//			bgLayer.addChild(title);
+
+			LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN, keydown);
+
 			//添加开始按钮
-			btn = addButton('开始游戏',100,50,22,15)
-			btn.x = 110;
-			btn.y = 300;
-			btn.addEventListener(LMouseEvent.MOUSE_DOWN, gameToStart);
-			bgLayer.addChild(btn);
+//			btn = addButton('开始游戏',100,50,22,15)
+//			btn.x = 110;
+//			btn.y = 300;
+//			btn.addEventListener(LMouseEvent.MOUSE_DOWN, gameToStart);
+//			bgLayer.addChild(btn);
 			addChild(new FPS());
 		}
-		
+
 		var map,_Block,score,nodeArray,speedMax,speedLabel,_stop,bitmapdata,bitmap,nextNodeArray;
 		//点击开始按钮
 		var upKey,leftKey,downKey,rightKey;
@@ -104,22 +107,21 @@
         	newBk.addChild( new LBitmap( new LBitmapData( imglist["background"] ) ) );
         	bgLayer.addChild(newBk);
 			//添加上下左右按钮
-			upKey = addButton('↑',40 , 40 ,15 ,10 );
-			
-			upKey.x = 90;
-			upKey.y = 380;
+			upKey = addButton('←',40 , 40 ,15 ,10 );
+			upKey.x = 50;
+			upKey.y = 420;
 			bgLayer.addChild(upKey);
-			
-			leftKey = addButton('←',40 , 40 ,15 ,10 );
-			leftKey.x = 50;
-			leftKey.y = 420;
+
+			leftKey = addButton('↑',40 , 40 ,15 ,10 );
+			leftKey.x = 90;
+			leftKey.y = 380;
 			bgLayer.addChild(leftKey);
-			
+
 			downKey = addButton('↓',40 , 40 ,15 ,10 );
 			downKey.x = 90;
 			downKey.y = 420;
 			bgLayer.addChild(downKey);
-			
+
 			rightKey = addButton('→',40 , 40 ,15 ,10 );
 			rightKey.x = 130;
 			rightKey.y = 420;
@@ -133,43 +135,26 @@
 			scoreLabel.x = 250;
 			scoreLabel.y = 250;
 			bgLayer.addChild(scoreLabel);
-			
+
 			//游戏区域
 			workMap = new LSprite();
 			bgLayer.addChild(workMap);
-			
+
+
 			gameStart();
 			bgLayer.addEventListener(LEvent.ENTER_FRAME, onframe)
 			leftKey.addEventListener(LMouseEvent.MOUSE_DOWN, moveleft);
 			rightKey.addEventListener(LMouseEvent.MOUSE_DOWN, moveright);
 			downKey.addEventListener(LMouseEvent.MOUSE_DOWN, movedown);
 			upKey.addEventListener(LMouseEvent.MOUSE_DOWN, movechange);
-			LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN, keydown);
-			LGlobal.stage.addEventListener(LKeyboardEvent.KEY_UP, keyover);
-//			 LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN , moveleft);
 //			 LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN, moveright);
+//			 LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN , keydown);
 //			 LGlobal.stage.addEventListener(LKeyboardEvent.KEY_DOWN , movechange);
 			bgLayer.addEventListener(LMouseEvent.MOUSE_UP, keyover);
 		}
-		function keydown(e){
-			console.log(e.keyCode)
-			switch ( e.keyCode ){
-				case 37:
-					moveleft();
-					break;
-				case 38:
-					movechange();
-					break;
-				case 39:
-					moveright();
-					break;
-				case 40:
-					movedown();
-					break;	
-				default:
-					break;
-			}
-		}
+		function keydown(e) {
+	        console.log("keydown e.keyCode = " + e.keyCode);
+	    }
 		//游戏开始
 		function gameStart(){
 			_Block = new Block();
@@ -199,6 +184,7 @@
 				[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
 				[1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 			];
+
 			nodeArray = [];
 			// 画游戏区域边框
 			var i,j,node,nArr,boxl = 15;
@@ -239,16 +225,16 @@
 			drawMap();
 			_stop = false;
 		}
-		
-		
-		
+
+
+
 		var myKey = {keyControl:0,speedCotrol:0,changeOver:false};
 		function onframe(){
 			if(!frameend)return;
 			if(_stop)return;
 			frameend = false;
 			minusBox();
-			if(myKey.keyControl==38 && !myKey.changeOver){
+			if(myKey.keyControl==32 && !myKey.changeOver){
 				changeBox();
 			}
 			if(myKey.keyControl==37 && checkPlus(-1,0)){
@@ -285,33 +271,30 @@
 			frameend = true;
 		}
 		function moveleft(){
-			console.log('left='+myKey.keyControl)
 			if(myKey.keyControl > 0)return;
-			myKey.keyControl = 37;
+			myKey.keyControl = 32;
 		}
 		function moveright(){
-			console.log('right='+myKey.keyControl)
 			if(myKey.keyControl > 0)return;
 			myKey.keyControl = 39;
 		}
 		function movedown(){
-			console.log('down='+myKey.keyControl)
+			console.log(myKey.keyControl)
 			if(myKey.keyControl > 0)return;
 			myKey.keyControl = 40;
 		}
-		
+
 		function movechange(){
-			console.log('movechange='+myKey.keyControl)
 			if(myKey.keyControl > 0)return;
-			myKey.keyControl = 38;
+			myKey.keyControl = 37;
 		}
-		
+
 		function keyover(){
 			myKey.keyControl=0;
 			myKey.speedCotrol = 0;
 			myKey.changeOver=false;
 		}
-		
+
 		function changeBox(){
 			var saveBox = nowBox;
 			nowBox = [
@@ -332,8 +315,8 @@
 				myKey.changeOver = true;
 			}
 		}
-		
-		
+
+
 		function removeBox(){
 			var i,j,count = 0;
 			for(i=point.y;i<(point.y+4);i++){
@@ -401,7 +384,7 @@
 			}
 			map[1] = [1,0,0,0,0,0,0,0,0,0,0,0,0,1];
 		}
-		
+
 		var point={x:0,y:0};//初始化坐标
 		var nextBox,nowBox;
 		function getNewBox(){
@@ -433,7 +416,7 @@
 			point.y=1;
 			nextBox=_Block.getBlock();
 		}
-		
+
 		// 准备下来的方块
 		function plusBox(){
 			var i,j;
@@ -473,8 +456,8 @@
 				}
 			}
 		}
-		
-		
+
+
 		function checkPlus(nx,ny){
 			var i,j;
 			for(i=0;i<nowBox.length;i++){
@@ -486,7 +469,7 @@
 			}
 			return true;
 		}
-		
+
 		//向下运动
 		function minusBox(){
 			var i,j;
@@ -496,7 +479,7 @@
 				}
 			}
 		}
-		
+
 		//游戏结束提示重新开始
 		function gameOver(){
 			bgLayer.removeChild(leftKey);
@@ -511,8 +494,8 @@
 			bgLayer.addChild(startBtn);
 			startBtn.addEventListener(LMouseEvent.MOUSE_DOWN, gameToStart);
 		}
-		
-		
+
+
 		//添加按钮的。。。。 text ：文本 、 w：宽、h：高、 x：y： 坐标。
 		function addButton(text,w,h,x,y){
 			var upState = new LSprite();
@@ -553,7 +536,7 @@
 				  	   		 [0,1,1,0],
 				  	   		 [0,1,1,0],
 				  	   		 [0,0,0,0]];
-				  	   
+
 			// T字形~
 			// ---
 			//  -
@@ -562,7 +545,7 @@
 				       		 [1,1,1,0],
 				       		 [0,1,0,0],
 				       		 [0,0,0,0]];
-				       
+
 			// L字形~
 			// --
 			// -
@@ -571,7 +554,7 @@
 				       		 [0,1,0,0],
 				       		 [0,1,0,0],
 				       		 [0,0,0,0]];
-				       
+
 			// 反L字形~
 			// --
 			//  -
@@ -580,7 +563,7 @@
 				       		 [0,0,1,0],
 				       		 [0,0,1,0],
 				       		 [0,0,0,0]];
-				       
+
 			// S字形~
 			// --
 			//--
@@ -607,5 +590,4 @@
 		}
 //		var newBlock  = Block();
 //		newBlock.getBlock();
-	</script>
-</html>
+</script>
